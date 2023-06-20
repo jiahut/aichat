@@ -66,6 +66,15 @@ impl Conversation {
         Ok(())
     }
 
+    pub fn add_assistant_message(&mut self, output: &str) -> Result<()> {
+        self.messages.push(Message {
+            role: MessageRole::Assistant,
+            content: output.to_string(),
+        });
+        self.tokens = num_tokens_from_messages(&self.messages);
+        Ok(())
+    }
+
     pub fn echo_messages(&self, content: &str) -> String {
         let messages = self.build_emssages(content);
         serde_yaml::to_string(&messages).unwrap_or_else(|_| "Unable to echo message".into())

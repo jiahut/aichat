@@ -20,6 +20,7 @@ pub enum ReplCmd {
     ClearRole,
     ViewInfo,
     StartConversation,
+    ContinueConversation,
     EndConversatoin,
     Copy,
 }
@@ -100,6 +101,10 @@ impl ReplCmdHandler {
             }
             ReplCmd::StartConversation => {
                 self.config.write().start_conversation()?;
+                print_now!("\n");
+            }
+            ReplCmd::ContinueConversation => {
+                self.config.write().continue_conversation(self.reply.clone().borrow().as_ref())?;
                 print_now!("\n");
             }
             ReplCmd::EndConversatoin => {

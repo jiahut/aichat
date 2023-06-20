@@ -49,6 +49,8 @@ const SET_COMPLETIONS: [&str; 8] = [
 #[derive(Debug, Clone, Deserialize)]
 #[serde(default)]
 pub struct Config {
+    /// OpenAI api entrypoint
+    pub api_entrypoint: Option<String>,
     /// OpenAI api key
     pub api_key: Option<String>,
     /// OpenAI organization id
@@ -90,6 +92,7 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
+            api_entrypoint: None,
             api_key: None,
             organization_id: None,
             model_name: None,
@@ -212,6 +215,10 @@ impl Config {
         let api_key = self.api_key.as_ref().expect("api_key not set");
         let organization_id = self.organization_id.as_ref();
         (api_key.into(), organization_id.cloned())
+    }
+
+    pub fn get_api_entrypoint(&self) -> String {
+        self.api_entrypoint.as_ref().expect("api_entrypoint = not set").into()
     }
 
     pub fn roles_file() -> Result<PathBuf> {
@@ -410,6 +417,22 @@ impl Config {
                 self.dry_run = value;
             }
             _ => bail!("Error: Unknown key `{key}`"),
+        }
+        Ok(())
+    }
+
+    pub fn continue_conversation(&mut self, output: &str) -> Result<()> {
+        if self.conversation.is_some() && self.get_reamind_tokens() > 0 {
+            let ans = Confirm::new("Already in a conversation, start a new one?")
+                .with_default(true)
+                .prompt()?;
+            if !ans {
+                return Ok(());
+            }
+        }
+        self.conversation = Some(Conversation::new(self.role.clone()));
+        if let Some(conversation) = self.conversation.as_mut() {
+            conversation.add_assistant_message(output)?;
         }
         Ok(())
     }

@@ -10,7 +10,9 @@ use std::time::Duration;
 use tokio::runtime::Runtime;
 use tokio::time::sleep;
 
-const API_URL: &str = "https://api.openai.com/v1/chat/completions";
+// const API_URL: &str = "http://137.184.178.157:8080/v1/chat/completions";
+// const API_URL: &str = "https:/lnkcast.com/v1/chat/completions";
+// const API_URL: &str = "https://api.openai.com/v1/chat/completions";
 
 #[allow(clippy::module_name_repetitions)]
 #[derive(Debug)]
@@ -155,9 +157,11 @@ impl ChatGptClient {
 
         let (api_key, organization_id) = self.config.read().get_api_key();
 
+        let api_entrypoint = self.config.read().get_api_entrypoint();
+
         let mut builder = self
             .build_client()?
-            .post(API_URL)
+            .post(api_entrypoint)
             .bearer_auth(api_key)
             .json(&body);
 
